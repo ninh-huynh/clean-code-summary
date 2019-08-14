@@ -171,3 +171,75 @@ Complex fullcrumPoint =  Complex.FromRealNumber(23.0);
 ## 16. Don't add gratutious context
 ## 17. Final words
 - Choosing good names requires good descriptive skills and a shared cultural background
+
+# Chapter 3: Functions
+## 1. Small
+- Function should be small
+- _They should be smaller than that_
+- Function should hardly ever be 20 lines long.
+
+## 2. Do one thing
+- _FUNCTIONS SHOULD DO ONE THING. THEY SHOULD DO IT WELL. THEY SHOULD DO IT ONLY._
+
+## 3. One level of abstraction per function
+## 4. Switch statments
+- Bury the `switch` statment in the basement of an ABSTRACT FACTORY
+- Create polymorphic objects, hidden behind an inheritance relationship
+
+## 5. Use descriptive names
+- Don't be afraid to make a name long.
+- Don't be afraid to spend time choosing a name.
+- Use the same pharases, nouns, and verbs in the function name
+
+## 6. Function Arguments
+- Three arguments (triadic) should be avoided where possible
+- Using an output argument instead of a return value for a transformation is confusing.
+- Flag arguments are ugly => Split the function into two
+
+
+## 7. Have no side effects
+
+## 8. Command Query Separation
+
+Functions should either do something or answer something, but not both.
+
+## 9. Prefer Exceptions to Returning Error codes
+Turn this
+```java
+if (deletePage(page) == E_OK) {
+    if (registry.deleteReference(page.name) == E_OK) {
+        if (configKeys.deleteKey(page.name.makeKey()) == E_OK){
+            logger.log("page deleted");
+        } else {
+            logger.log("configKey not deleted");
+        }
+    } else {
+    logger.log("deleteReference from registry failed");
+    }
+} else {
+    logger.log("delete failed");
+    return E_ERROR;
+}
+```
+
+to this
+
+```java
+try {
+    deletePage(page);
+    registry.deleteReference(page.name);
+    configKeys.deleteKey(page.name.makeKey());
+} 
+catch (Exception e) {
+    logger.log(e.getMessage());
+}
+```
+## 10. Don't Repeat Yourself
+
+Duplication may be the root of all evil in software
+
+## 11. Structured Programming
+
+Dijkstra said that every function, and every block within a function, should have one entry and one exit
+
+It mean that there should only be one return statement in a function, no `break` or `continue` statments in a loop, and never, _ever_, any `goto` statements.
