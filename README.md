@@ -41,6 +41,9 @@ This is the summary of Clean Code
   - [9. Prefer Exceptions to Returning Error codes](#9.-Prefer-Exceptions-to-Returning-Error-codes)
   - [10. Don't Repeat Yourself](#10.-Don't-Repeat-Yourself)
   - [11. Structured Programming](#11.-Structured-Programming)
+
+- [Chapter 04: Comments](#chapter-4-comments)
+  - []()
 # Chapter 1: Clean Code
 ## There will be code
 Code is really the language in which we ulitmately express the requirements.
@@ -284,3 +287,320 @@ Duplication may be the root of all evil in software
 Dijkstra said that every function, and every block within a function, should have one entry and one exit
 
 It mean that there should only be one return statement in a function, no `break` or `continue` statments in a loop, and never, _ever_, any `goto` statements.
+
+# Chapter 4: Comments
+## Comments do not make up for bad code
+- Rather than spend our time writing the comments that explain the mess we have made, spend it cleaning that mess.
+
+## Explain yourself in code
+Bad:
+
+```java
+// Check to see if the employee is eligible for full benefits
+if ((employee.flags & HOURLY_FLAG) &&
+    (employee.age > 65))
+```
+
+Good:
+```java
+if (employee.isEligibleForFullBenefits())
+```
+
+
+## Good comments
+### Legal comments
+ Where posssoble, refer to standard license or other external document
+```java
+// Copyright (C) 2003,2004,2005 by Object Mentor, Inc. All rights reserved.
+// Released under the terms of the GNU General Public License version 2 or later.
+```
+### Informative Comments
+```java
+// format matched kk:mm:ss EEE, MMM dd, yyyy
+Pattern timeMatcher = Pattern.compile(
+"\\d*:\\d*:\\d* \\w*, \\w* \\d*, \\d*");
+```
+### Explanation of Intent
+```java
+public void testConcurrentAddWidgets() throws Exception {
+    WidgetBuilder widgetBuilder =
+        new WidgetBuilder(new Class[]{BoldWidget.class});
+    String text = "'''bold text'''";
+    ParentWidget parent =
+        new BoldWidget(new MockWidgetRoot(), "'''bold text'''");
+    AtomicBoolean failFlag = new AtomicBoolean();
+    failFlag.set(false);
+    //This is our best attempt to get a race condition
+    //by creating large number of threads.
+    for (int i = 0; i < 25000; i++) {
+        WidgetBuilderThread widgetBuilderThread =
+            new WidgetBuilderThread(widgetBuilder, text, parent, failFlag);
+        Thread thread = new Thread(widgetBuilderThread);
+        thread.start();
+    }
+    assertEquals(false, failFlag.get());
+}
+```
+
+
+### Clarification
+```java
+public void testCompareTo() throws Exception
+{
+    WikiPagePath a = PathParser.parse("PageA");
+    WikiPagePath ab = PathParser.parse("PageA.PageB");
+    WikiPagePath b = PathParser.parse("PageB");
+    WikiPagePath aa = PathParser.parse("PageA.PageA");
+    WikiPagePath bb = PathParser.parse("PageB.PageB");
+    WikiPagePath ba = PathParser.parse("PageB.PageA");
+    assertTrue(a.compareTo(a) == 0);    // a == a    
+    assertTrue(a.compareTo(b) != 0);    // a != b
+    assertTrue(ab.compareTo(ab) == 0);  // ab == ab
+    assertTrue(a.compareTo(b) == -1);   // a < b
+    assertTrue(aa.compareTo(ab) == -1); // aa < ab
+    assertTrue(ba.compareTo(bb) == -1); // ba < bb
+    assertTrue(b.compareTo(a) == 1);    // b > a
+    assertTrue(ab.compareTo(aa) == 1);  // ab > aa
+    assertTrue(bb.compareTo(ba) == 1);  // bb > ba
+}
+```
+
+### Warning of Consequences
+ We can turn off the test case by using the `@Ignore` attribute. Ex: `@Ignore("Takes too long to run")`.
+
+
+```java
+public static SimpleDateFormat makeStandardHttpDateFormat()
+{
+    //SimpleDateFormat is not thread safe,
+    //so we need to create each instance independently.
+    SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+    df.setTimeZone(TimeZone.getTimeZone("GMT"));
+    return df;
+}
+```
+### TODO Comments
+```java
+//TODO-MdM these are not needed
+// We expect this to go away when we do the checkout model
+protected VersionInfo makeVersion() throws Exception
+{
+    return null;
+}
+```
+### Amplification
+```java
+String listItemContent = match.group(3).trim();
+// the trim is real important. It removes the starting
+// spaces that could cause the item to be recognized
+// as another list.
+new ListItemWidget(this, listItemContent, this.level + 1);
+return buildList(text.substring(match.end()));
+```
+### Javadocs in Public APIs
+
+## Bad comments
+
+### Mumbling
+
+### Redundant Comments
+```java
+// Utility method that returns when this.closed is true. Throws an exception
+// if the timeout is reached.
+public synchronized void waitForClose(final long timeoutMillis)
+throws Exception
+{
+    if (!closed)
+    {
+        wait(timeoutMillis);
+        if (!closed)
+            throw new Exception("MockResponseSender could not be closed");
+    }
+}
+```
+
+### Misleading comments
+
+### Mandated comments
+```java
+/**
+*
+* @param title The title of the CD
+* @param author The author of the CD
+* @param tracks The number of tracks on the CD
+* @param durationInMinutes The duration of the CD in minutes
+*/
+public void addCD(String title, String author,
+                    int tracks, int durationInMinutes) {
+    CD cd = new CD();
+    cd.title = title;
+    cd.author = author;
+    cd.tracks = tracks;
+    cd.duration = duration;
+    cdList.add(cd);
+}
+```
+
+### Journal Comments
+```java
+/*
+*
+* Changes (from 11-Oct-2001)
+* --------------------------
+* 11-Oct-2001 : Re-organised the class and moved it to new package
+* com.jrefinery.date (DG);
+* 05-Nov-2001 : Added a getDescription() method, and eliminated NotableDate
+* class (DG);
+* 12-Nov-2001 : IBD requires setDescription() method, now that NotableDate
+* class is gone (DG); Changed getPreviousDayOfWeek(),
+* getFollowingDayOfWeek() and getNearestDayOfWeek() to correct
+* bugs (DG);
+* 05-Dec-2001 : Fixed bug in SpreadsheetDate class (DG);
+* 29-May-2002 : Moved the month constants into a separate interface
+* (MonthConstants) (DG);
+* 27-Aug-2002 : Fixed bug in addMonths() method, thanks to N???levka Petr (DG);
+* 03-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+* 13-Mar-2003 : Implemented Serializable (DG);
+* 29-May-2003 : Fixed bug in addMonths method (DG);
+* 04-Sep-2003 : Implemented Comparable. Updated the isInRange javadocs (DG);
+* 05-Jan-2005 : Fixed bug in addYears() method (1096282) (DG);
+*/
+```
+
+### Noise Comments
+
+```java
+/**
+* Default constructor.
+*/
+protected AnnualDateRule() {
+}
+```
+
+```java
+/** The day of the month. */
+private int dayOfMonth;
+```
+
+```java
+/**
+* Returns the day of the month.
+*
+* @return the day of the month.
+*/
+public int getDayOfMonth() {
+return dayOfMonth;
+}
+```
+
+### Scary noise
+```java
+/** The name. */
+private String name;
+/** The version. */
+private String version;
+/** The licenceName. */
+private String licenceName;
+/** The version. */
+private String info;
+```
+
+### Don't use a comment when you can use a function or a variable
+Bad:
+```java
+// does the module from the global list <mod> depend on the
+// subsystem we are part of?
+if (smodule.getDependSubsystems().contains(subSysMod.getSubSystem()))
+```
+
+Good:
+```java
+ArrayList moduleDependees = smodule.getDependSubsystems();
+String ourSubSystem = subSysMod.getSubSystem();
+if (moduleDependees.contains(ourSubSystem))
+```
+
+### Position markers
+
+### Closing brace comments
+> If you find yourself wanting to mark your closing braces, try to shorten your functions instead.
+
+### Attributions and Bylines
+Source code control system is a better place for this kind of information.
+
+### Commented-Out code
+Don't do this:
+```java
+InputStreamResponse response = new InputStreamResponse();
+response.setBody(formatter.getResultStream(), formatter.getByteCount());
+// InputStream resultsStream = formatter.getResultStream();
+// StreamReader reader = new StreamReader(resultsStream);
+// response.setContent(reader.read(formatter.getByteCount()));
+```
+
+### HTML Comments
+
+### Nonlocal Information
+```java
+/**
+* Port on which fitnesse would run. Defaults to <b>8082</b>.
+*
+* @param fitnessePort
+*/
+public void setFitnessePort(int fitnessePort)
+{
+    this.fitnessePort = fitnessePort;
+}
+```
+
+### Too much information
+Don't put interseting historical discussions/irrelevant description into comments
+```java
+/*
+RFC 2045 - Multipurpose Internet Mail Extensions (MIME)
+Part One: Format of Internet Message Bodies
+section 6.8. Base64 Content-Transfer-Encoding
+The encoding process represents 24-bit groups of input bits as output
+strings of 4 encoded characters. Proceeding from left to right, a
+24-bit input group is formed by concatenating 3 8-bit input groups.
+These 24 bits are then treated as 4 concatenated 6-bit groups, each
+of which is translated into a single digit in the base64 alphabet.
+When encoding a bit stream via the base64 encoding, the bit stream
+must be presumed to be ordered with the most-significant-bit first.
+That is, the first bit in the stream will be the high-order bit in
+the first 8-bit byte, and the eighth bit will be the low-order bit in
+the first 8-bit byte, and so on.
+*/
+```
+
+### Inobvious connection
+```java
+/*
+* start with an array that is big enough to hold all the pixels
+* (plus filter bytes), and an extra 200 bytes for header info
+*/
+this.pngBytes = new byte[((this.width + 1) * this.height * 3) + 200];
+```
+
+### Function Headers
+
+### Javadocs in Nonpublic code
+
+# Chapter 5. Formatting
+
+## The purpose of formatting
+Code formatting is about communication, and communication is the professional developer's first order of business.
+
+## Vertical formatting
+- It possible to build significant systems out of files that are typically 200 lines long, with an upper limit of 500.
+- It should be considered very desirable.
+
+### Variable declarations
+Variables should be declared as close to their usage as possible.
+
+### Dependent functions
+If one function calls another, they should be vertically close and the caller should be abobe the callee, if at all possible.
+
+## Horizontal formatting
+## Team rules
+## Uncle Bob's formatting rules
